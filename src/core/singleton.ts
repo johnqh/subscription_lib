@@ -22,6 +22,7 @@ let instance: SubscriptionService | null = null;
 let currentAdapter: SubscriptionAdapter | null = null;
 let currentUserId: string | undefined = undefined;
 const userIdChangeListeners: Array<() => void> = [];
+const subscriptionRefreshListeners: Array<() => void> = [];
 
 /**
  * Initialize the subscription singleton
@@ -95,6 +96,11 @@ export async function refreshSubscription(): Promise<void> {
     return;
   }
   await Promise.all([instance.loadOfferings(), instance.loadCustomerInfo()]);
+
+  // Notify listeners that subscription data has been refreshed
+  for (const listener of subscriptionRefreshListeners) {
+    listener();
+  }
 }
 
 /**
@@ -162,6 +168,22 @@ export function onSubscriptionUserIdChange(listener: () => void): () => void {
     const index = userIdChangeListeners.indexOf(listener);
     if (index >= 0) {
       userIdChangeListeners.splice(index, 1);
+    }
+  };
+}
+
+/**
+ * Subscribe to subscription data refresh events.
+ * Called after refreshSubscription() completes.
+ * @param listener Callback to invoke when subscription data is refreshed
+ * @returns Unsubscribe function
+ */
+export function onSubscriptionRefresh(listener: () => void): () => void {
+  subscriptionRefreshListeners.push(listener);
+  return () => {
+    const index = subscriptionRefreshListeners.indexOf(listener);
+    if (index >= 0) {
+      subscriptionRefreshListeners.splice(index, 1);
     }
   };
 }

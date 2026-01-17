@@ -10,6 +10,7 @@ import {
   getSubscriptionInstance,
   getSubscriptionUserId,
   isSubscriptionInitialized,
+  onSubscriptionRefresh,
   onSubscriptionUserIdChange,
   setSubscriptionUserId,
 } from '../core/singleton';
@@ -24,7 +25,9 @@ export interface UseUserSubscriptionResult {
   isLoading: boolean;
   /** Error if loading failed */
   error: Error | null;
-  /** Manually refetch the data */
+  /** Force refresh customer subscription data from the server */
+  update: () => Promise<void>;
+  /** @deprecated Use update() instead */
   refetch: () => Promise<void>;
 }
 
@@ -124,15 +127,29 @@ export function useUserSubscription(
     loadData();
 
     // Subscribe to user ID changes to reload
-    const unsubscribe = onSubscriptionUserIdChange(() => {
+    const unsubscribeUserId = onSubscriptionUserIdChange(() => {
       console.log('[useUserSubscription] User ID changed, reloading...');
       loadData();
     });
 
-    return unsubscribe;
+    // Subscribe to subscription refresh events (e.g., after purchase)
+    const unsubscribeRefresh = onSubscriptionRefresh(() => {
+      console.log('[useUserSubscription] Subscription refreshed, updating...');
+      // Get the updated subscription from the service
+      if (isSubscriptionInitialized()) {
+        const service = getSubscriptionInstance();
+        const currentSub = service.getCurrentSubscription();
+        setSubscription(currentSub);
+      }
+    });
+
+    return () => {
+      unsubscribeUserId();
+      unsubscribeRefresh();
+    };
   }, [loadData]);
 
-  const refetch = useCallback(async () => {
+  const update = useCallback(async () => {
     if (!isSubscriptionInitialized()) return;
 
     const service = getSubscriptionInstance();
@@ -151,5 +168,5 @@ export function useUserSubscription(
     }
   }, []);
 
-  return { subscription, isLoading, error, refetch };
+  return { subscription, isLoading, error, update, refetch: update };
 }

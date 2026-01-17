@@ -13,5 +13,6 @@ export {
   setSubscriptionUserId,
   getSubscriptionUserId,
   onSubscriptionUserIdChange,
+  onSubscriptionRefresh,
   type SubscriptionConfig,
 } from './singleton';

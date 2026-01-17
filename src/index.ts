@@ -15,6 +15,7 @@ export {
   setSubscriptionUserId,
   getSubscriptionUserId,
   onSubscriptionUserIdChange,
+  onSubscriptionRefresh,
   SubscriptionService,
   type SubscriptionConfig,
   type SubscriptionServiceConfig,
