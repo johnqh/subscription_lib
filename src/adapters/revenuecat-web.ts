@@ -32,33 +32,24 @@ export function configureRevenueCatAdapter(revenueCatApiKey: string): void {
 }
 
 /**
- * Get or create an anonymous user ID for RevenueCat.
- * RevenueCat web SDK requires a user ID, so we generate one for anonymous users.
- */
-function getAnonymousUserId(): string {
-  const STORAGE_KEY = 'rc_anonymous_user_id';
-  let anonId = localStorage.getItem(STORAGE_KEY);
-  if (!anonId) {
-    anonId = `anon_${globalThis.crypto.randomUUID()}`;
-    localStorage.setItem(STORAGE_KEY, anonId);
-  }
-  return anonId;
-}
-
-/**
  * Lazily initialize RevenueCat SDK when first needed.
- * Uses anonymous user ID if no user is logged in.
+ * Requires a user to be set first via setRevenueCatUser().
  */
 async function ensureInitialized(): Promise<Purchases> {
   if (!apiKey) {
     throw new Error('RevenueCat not configured');
   }
 
+  if (!currentUserId) {
+    throw new Error('RevenueCat user not set. Call setRevenueCatUser() first.');
+  }
+
   if (!purchasesInstance) {
     const SDK = await import('@revenuecat/purchases-js');
-    // Use current user ID or anonymous ID - RevenueCat web SDK requires a user ID
-    const userId = currentUserId || getAnonymousUserId();
-    purchasesInstance = SDK.Purchases.configure({ apiKey, appUserId: userId });
+    purchasesInstance = SDK.Purchases.configure({
+      apiKey,
+      appUserId: currentUserId,
+    });
   }
 
   return purchasesInstance;
@@ -139,6 +130,12 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     },
 
     async getOfferings(): Promise<AdapterOfferings> {
+      // Return empty offerings if no user is set
+      if (!currentUserId) {
+        console.log('[revenuecat-web] No user set, returning empty offerings');
+        return { all: {}, current: null };
+      }
+
       try {
         const purchases = await ensureInitialized();
         const offerings = await purchases.getOfferings();
@@ -239,6 +236,11 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     },
 
     async getCustomerInfo(): Promise<AdapterCustomerInfo> {
+      // Return empty customer info if no user is set
+      if (!currentUserId) {
+        return { activeSubscriptions: [], entitlements: { active: {} } };
+      }
+
       try {
         const purchases = await ensureInitialized();
         const customerInfo = await purchases.getCustomerInfo();
