@@ -8,7 +8,10 @@ import { useCallback, useEffect, useState } from 'react';
 import type { CurrentSubscription } from '../types/subscription';
 import {
   getSubscriptionInstance,
+  getSubscriptionUserId,
   isSubscriptionInitialized,
+  onSubscriptionUserIdChange,
+  setSubscriptionUserId,
 } from '../core/singleton';
 
 /**
@@ -26,13 +29,31 @@ export interface UseUserSubscriptionResult {
 }
 
 /**
+ * Options for useUserSubscription hook
+ */
+export interface UseUserSubscriptionOptions {
+  /** Optional user ID. When provided, sets the subscription user and reloads on change. */
+  userId?: string;
+  /** Optional email for the user */
+  userEmail?: string;
+}
+
+/**
  * Hook to get current user's subscription status
  *
+ * @param options Optional configuration including userId
  * @returns Current subscription data, loading state, and error
  *
  * @example
  * ```typescript
+ * // Without user ID (anonymous or use existing)
  * const { subscription, isLoading } = useUserSubscription();
+ *
+ * // With user ID (will re-initialize when user changes)
+ * const { subscription, isLoading } = useUserSubscription({
+ *   userId: user?.uid,
+ *   userEmail: user?.email,
+ * });
  *
  * if (isLoading) return <Spinner />;
  *
@@ -43,12 +64,31 @@ export interface UseUserSubscriptionResult {
  * }
  * ```
  */
-export function useUserSubscription(): UseUserSubscriptionResult {
+export function useUserSubscription(
+  options?: UseUserSubscriptionOptions
+): UseUserSubscriptionResult {
+  const { userId, userEmail } = options ?? {};
   const [subscription, setSubscription] = useState<CurrentSubscription | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Handle user ID changes
+  useEffect(() => {
+    const currentLibUserId = getSubscriptionUserId();
+    // Only update if userId is explicitly provided and different
+    if (userId !== undefined && userId !== currentLibUserId) {
+      console.log(
+        '[useUserSubscription] User ID changed, updating subscription user:',
+        {
+          from: currentLibUserId,
+          to: userId,
+        }
+      );
+      setSubscriptionUserId(userId, userEmail);
+    }
+  }, [userId, userEmail]);
 
   const loadData = useCallback(async () => {
     if (!isSubscriptionInitialized()) {
@@ -79,8 +119,17 @@ export function useUserSubscription(): UseUserSubscriptionResult {
     }
   }, []);
 
+  // Load data on mount and when userId changes
   useEffect(() => {
     loadData();
+
+    // Subscribe to user ID changes to reload
+    const unsubscribe = onSubscriptionUserIdChange(() => {
+      console.log('[useUserSubscription] User ID changed, reloading...');
+      loadData();
+    });
+
+    return unsubscribe;
   }, [loadData]);
 
   const refetch = useCallback(async () => {

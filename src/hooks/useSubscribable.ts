@@ -5,7 +5,10 @@
  */
 
 import { useMemo } from 'react';
-import { useSubscriptions } from './useSubscriptions';
+import {
+  useSubscriptions,
+  type UseSubscriptionsOptions,
+} from './useSubscriptions';
 import { useUserSubscription } from './useUserSubscription';
 import { findUpgradeablePackages } from '../utils/level-calculator';
 import {
@@ -26,6 +29,11 @@ export interface UseSubscribableResult {
 }
 
 /**
+ * Options for useSubscribable hook
+ */
+export type UseSubscribableOptions = UseSubscriptionsOptions;
+
+/**
  * Hook to get packages that the user can subscribe to or upgrade to
  *
  * Upgrade eligibility rules:
@@ -37,11 +45,18 @@ export interface UseSubscribableResult {
  *   - Level is determined by price comparison within the same period
  *
  * @param offerId Offer identifier
+ * @param options Optional configuration including userId
  * @returns List of subscribable package IDs
  *
  * @example
  * ```typescript
  * const { subscribablePackageIds } = useSubscribable('default');
+ *
+ * // With user ID
+ * const { subscribablePackageIds } = useSubscribable('default', {
+ *   userId: user?.uid,
+ * });
+ *
  * const { packages } = useSubscriptionForPeriod('default', 'monthly');
  *
  * return (
@@ -57,23 +72,36 @@ export interface UseSubscribableResult {
  * );
  * ```
  */
-export function useSubscribable(offerId: string): UseSubscribableResult {
+export function useSubscribable(
+  offerId: string,
+  options?: UseSubscribableOptions
+): UseSubscribableResult {
   const {
     offer,
     isLoading: loadingOffer,
     error: offerError,
-  } = useSubscriptions(offerId);
+  } = useSubscriptions(offerId, options);
   const {
     subscription,
     isLoading: loadingSub,
     error: subError,
-  } = useUserSubscription();
+  } = useUserSubscription(options);
 
   const isLoading = loadingOffer || loadingSub;
   const error = offerError || subError;
 
   const subscribablePackageIds = useMemo(() => {
+    console.log('[useSubscribable] Computing subscribablePackageIds:', {
+      offerId,
+      hasOffer: !!offer,
+      offerPackageCount: offer?.packages.length ?? 0,
+      offerPackageIds: offer?.packages.map(p => p.packageId),
+      subscription,
+      isSubscriptionInitialized: isSubscriptionInitialized(),
+    });
+
     if (!offer) {
+      console.log('[useSubscribable] No offer, returning empty array');
       return [];
     }
 
@@ -84,15 +112,26 @@ export function useSubscribable(offerId: string): UseSubscribableResult {
     if (isSubscriptionInitialized()) {
       const service = getSubscriptionInstance();
       const freeTier = service.getFreeTierPackage();
+      console.log('[useSubscribable] Free tier:', freeTier);
       // Only add if not already in the list
       if (!allPackages.some(p => p.packageId === freeTier.packageId)) {
         allPackages = [freeTier, ...allPackages];
       }
     }
 
+    console.log(
+      '[useSubscribable] All packages:',
+      allPackages.map(p => p.packageId)
+    );
+
     // No subscription or inactive = all packages subscribable
     if (!subscription || !subscription.isActive) {
-      return allPackages.map(p => p.packageId);
+      const result = allPackages.map(p => p.packageId);
+      console.log(
+        '[useSubscribable] No active subscription, returning all:',
+        result
+      );
+      return result;
     }
 
     // Pass both packageId and productId for matching
@@ -103,11 +142,18 @@ export function useSubscribable(offerId: string): UseSubscribableResult {
 
     // If we don't know the current package or product, return all (shouldn't happen)
     if (!current.packageId && !current.productId) {
-      return allPackages.map(p => p.packageId);
+      const result = allPackages.map(p => p.packageId);
+      console.log(
+        '[useSubscribable] No current package/product, returning all:',
+        result
+      );
+      return result;
     }
 
     // Calculate upgradeable packages
-    return findUpgradeablePackages(current, allPackages);
+    const result = findUpgradeablePackages(current, allPackages);
+    console.log('[useSubscribable] Upgradeable packages:', result);
+    return result;
   }, [offer, subscription]);
 
   return { subscribablePackageIds, isLoading, error };

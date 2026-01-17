@@ -38,7 +38,7 @@ export class SubscriptionService {
   private freeTier: FreeTierConfig;
   private offersCache: Map<string, SubscriptionOffer> = new Map();
   private currentSubscription: CurrentSubscription | null = null;
-  private isLoadingOfferings = false;
+  private loadOfferingsPromise: Promise<void> | null = null;
   private isLoadingCustomerInfo = false;
 
   constructor(config: SubscriptionServiceConfig) {
@@ -51,28 +51,46 @@ export class SubscriptionService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Load offerings from RevenueCat
+   * Load offerings from RevenueCat.
+   * Multiple concurrent calls will share the same promise.
+   * If already loaded, returns immediately.
    */
   async loadOfferings(params?: { currency?: string }): Promise<void> {
-    if (this.isLoadingOfferings) return;
+    // If already loaded, don't reload
+    if (this.offersCache.size > 0) {
+      return;
+    }
 
-    this.isLoadingOfferings = true;
+    // If already loading, wait for that load to complete
+    if (this.loadOfferingsPromise) {
+      return this.loadOfferingsPromise;
+    }
+
+    // Start loading
+    this.loadOfferingsPromise = this.doLoadOfferings(params);
+
     try {
-      const offerings = await this.adapter.getOfferings(params);
-      this.offersCache.clear();
-
-      for (const [offerId, offering] of Object.entries(offerings.all)) {
-        const parsedOffer = this.parseOffering(offerId, offering);
-        this.offersCache.set(offerId, parsedOffer);
-      }
-
-      // Also add current offering as 'default' if available
-      if (offerings.current && !this.offersCache.has('default')) {
-        const parsedOffer = this.parseOffering('default', offerings.current);
-        this.offersCache.set('default', parsedOffer);
-      }
+      await this.loadOfferingsPromise;
     } finally {
-      this.isLoadingOfferings = false;
+      this.loadOfferingsPromise = null;
+    }
+  }
+
+  /**
+   * Internal method to actually load offerings
+   */
+  private async doLoadOfferings(params?: { currency?: string }): Promise<void> {
+    const offerings = await this.adapter.getOfferings(params);
+
+    for (const [offerId, offering] of Object.entries(offerings.all)) {
+      const parsedOffer = this.parseOffering(offerId, offering);
+      this.offersCache.set(offerId, parsedOffer);
+    }
+
+    // Also add current offering as 'default' if available
+    if (offerings.current && !this.offersCache.has('default')) {
+      const parsedOffer = this.parseOffering('default', offerings.current);
+      this.offersCache.set('default', parsedOffer);
     }
   }
 
@@ -206,6 +224,14 @@ export class SubscriptionService {
    */
   hasLoadedCustomerInfo(): boolean {
     return this.currentSubscription !== null;
+  }
+
+  /**
+   * Clear customer info cache (e.g., when user changes).
+   * Offerings cache is preserved since products don't change with user.
+   */
+  clearCustomerInfo(): void {
+    this.currentSubscription = null;
   }
 
   // ---------------------------------------------------------------------------

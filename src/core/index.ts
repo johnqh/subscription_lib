@@ -10,5 +10,8 @@ export {
   isSubscriptionInitialized,
   resetSubscription,
   refreshSubscription,
+  setSubscriptionUserId,
+  getSubscriptionUserId,
+  onSubscriptionUserIdChange,
   type SubscriptionConfig,
 } from './singleton';

@@ -5,11 +5,13 @@
 export {
   useSubscriptions,
   type UseSubscriptionsResult,
+  type UseSubscriptionsOptions,
 } from './useSubscriptions';
 
 export {
   useUserSubscription,
   type UseUserSubscriptionResult,
+  type UseUserSubscriptionOptions,
 } from './useUserSubscription';
 
 export {
@@ -22,4 +24,8 @@ export {
   type UseSubscriptionForPeriodResult,
 } from './useSubscriptionForPeriod';
 
-export { useSubscribable, type UseSubscribableResult } from './useSubscribable';
+export {
+  useSubscribable,
+  type UseSubscribableResult,
+  type UseSubscribableOptions,
+} from './useSubscribable';

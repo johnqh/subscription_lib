@@ -7,7 +7,10 @@
 import { useMemo } from 'react';
 import type { SubscriptionPackage } from '../types/subscription';
 import type { SubscriptionPeriod } from '../types/period';
-import { useSubscriptions } from './useSubscriptions';
+import {
+  useSubscriptions,
+  type UseSubscriptionsOptions,
+} from './useSubscriptions';
 import {
   getSubscriptionInstance,
   isSubscriptionInitialized,
@@ -34,11 +37,17 @@ export interface UseSubscriptionForPeriodResult {
  *
  * @param offerId Offer identifier
  * @param period Billing period to filter by
+ * @param options Optional configuration including userId
  * @returns Filtered and sorted packages
  *
  * @example
  * ```typescript
  * const { packages, isLoading } = useSubscriptionForPeriod('default', 'monthly');
+ *
+ * // With user ID
+ * const { packages, isLoading } = useSubscriptionForPeriod('default', 'monthly', {
+ *   userId: user?.uid,
+ * });
  *
  * return (
  *   <div className="grid">
@@ -55,9 +64,10 @@ export interface UseSubscriptionForPeriodResult {
  */
 export function useSubscriptionForPeriod(
   offerId: string,
-  period: SubscriptionPeriod
+  period: SubscriptionPeriod,
+  options?: UseSubscriptionsOptions
 ): UseSubscriptionForPeriodResult {
-  const { offer, isLoading, error } = useSubscriptions(offerId);
+  const { offer, isLoading, error } = useSubscriptions(offerId, options);
 
   const packages = useMemo(() => {
     if (!offer) return [];

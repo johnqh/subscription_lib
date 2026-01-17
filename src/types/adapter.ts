@@ -156,4 +156,13 @@ export interface SubscriptionAdapter {
    * @param params Purchase parameters
    */
   purchase(params: AdapterPurchaseParams): Promise<AdapterPurchaseResult>;
+
+  /**
+   * Set the user ID for the subscription service.
+   * Pass undefined to clear the user (logout).
+   * The adapter should re-initialize RevenueCat with the new user.
+   * @param userId User identifier, or undefined to clear
+   * @param email Optional email for the user
+   */
+  setUserId?(userId: string | undefined, email?: string): Promise<void>;
 }

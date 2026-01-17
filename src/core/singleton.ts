@@ -19,6 +19,9 @@ export interface SubscriptionConfig {
 }
 
 let instance: SubscriptionService | null = null;
+let currentAdapter: SubscriptionAdapter | null = null;
+let currentUserId: string | undefined = undefined;
+const userIdChangeListeners: Array<() => void> = [];
 
 /**
  * Initialize the subscription singleton
@@ -39,6 +42,7 @@ let instance: SubscriptionService | null = null;
  * ```
  */
 export function initializeSubscription(config: SubscriptionConfig): void {
+  currentAdapter = config.adapter;
   instance = new SubscriptionService({
     adapter: config.adapter,
     freeTier: config.freeTier,
@@ -91,4 +95,73 @@ export async function refreshSubscription(): Promise<void> {
     return;
   }
   await Promise.all([instance.loadOfferings(), instance.loadCustomerInfo()]);
+}
+
+/**
+ * Set the user ID for the subscription service.
+ * This will re-initialize RevenueCat with the new user and reload customer info.
+ * Offerings (product catalog) are preserved since they don't change with user.
+ *
+ * @param userId User identifier, or undefined to clear (logout)
+ * @param email Optional email for the user
+ *
+ * @example
+ * ```typescript
+ * import { setSubscriptionUserId } from '@sudobility/subscription_lib';
+ *
+ * // On login
+ * await setSubscriptionUserId(user.uid, user.email);
+ *
+ * // On logout
+ * await setSubscriptionUserId(undefined);
+ * ```
+ */
+export async function setSubscriptionUserId(
+  userId: string | undefined,
+  email?: string
+): Promise<void> {
+  // Skip if same user
+  if (currentUserId === userId) {
+    return;
+  }
+
+  console.log('[subscription_lib] Setting user ID:', { userId, email });
+  currentUserId = userId;
+
+  // Call adapter's setUserId if available
+  if (currentAdapter?.setUserId) {
+    await currentAdapter.setUserId(userId, email);
+  }
+
+  // Clear only customer info cache (preserve offerings)
+  if (instance) {
+    instance.clearCustomerInfo();
+  }
+
+  // Notify listeners (so they can reload customer info)
+  for (const listener of userIdChangeListeners) {
+    listener();
+  }
+}
+
+/**
+ * Get the current user ID
+ */
+export function getSubscriptionUserId(): string | undefined {
+  return currentUserId;
+}
+
+/**
+ * Subscribe to user ID changes
+ * @param listener Callback to invoke when user ID changes
+ * @returns Unsubscribe function
+ */
+export function onSubscriptionUserIdChange(listener: () => void): () => void {
+  userIdChangeListeners.push(listener);
+  return () => {
+    const index = userIdChangeListeners.indexOf(listener);
+    if (index >= 0) {
+      userIdChangeListeners.splice(index, 1);
+    }
+  };
 }

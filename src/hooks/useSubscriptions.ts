@@ -2,6 +2,8 @@
  * useSubscriptions Hook
  *
  * Fetch and manage subscription offer data.
+ * Note: Offerings (product catalog) don't change with user,
+ * so this hook doesn't reload when user changes.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -26,9 +28,22 @@ export interface UseSubscriptionsResult {
 }
 
 /**
- * Hook to get subscription offer data
+ * Options for useSubscriptions hook
+ * Note: userId is accepted for API consistency but offerings don't change with user.
+ */
+export interface UseSubscriptionsOptions {
+  /** Optional user ID (accepted for API consistency, but offerings don't change with user) */
+  userId?: string;
+  /** Optional email for the user */
+  userEmail?: string;
+}
+
+/**
+ * Hook to get subscription offer data (product catalog).
+ * Note: Offerings don't change with user, so this hook doesn't need userId.
  *
  * @param offerId Offer identifier to fetch
+ * @param _options Optional configuration (userId accepted but not used - offerings are user-independent)
  * @returns Offer data, loading state, and error
  *
  * @example
@@ -47,13 +62,17 @@ export interface UseSubscriptionsResult {
  * );
  * ```
  */
-export function useSubscriptions(offerId: string): UseSubscriptionsResult {
+export function useSubscriptions(
+  offerId: string,
+  _options?: UseSubscriptionsOptions
+): UseSubscriptionsResult {
   const [offer, setOffer] = useState<SubscriptionOffer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const loadData = useCallback(async () => {
     if (!isSubscriptionInitialized()) {
+      console.log('[useSubscriptions] Subscription not initialized');
       setError(new Error('Subscription not initialized'));
       setIsLoading(false);
       return;
@@ -61,24 +80,45 @@ export function useSubscriptions(offerId: string): UseSubscriptionsResult {
 
     const service = getSubscriptionInstance();
 
+    // If we already have this offer cached, use it without refetching
+    const cachedOffer = service.getOffer(offerId);
+    if (cachedOffer) {
+      console.log('[useSubscriptions] Using cached offer:', {
+        offerId,
+        packageCount: cachedOffer.packages.length,
+      });
+      setOffer(cachedOffer);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      // Load offerings if not already loaded
+      // Load offerings only if not already loaded
       if (!service.hasLoadedOfferings()) {
+        console.log('[useSubscriptions] Loading offerings...');
         await service.loadOfferings();
+        console.log('[useSubscriptions] Offerings loaded');
       }
 
       const loadedOffer = service.getOffer(offerId);
+      console.log('[useSubscriptions] Got offer:', {
+        offerId,
+        hasOffer: !!loadedOffer,
+        packageCount: loadedOffer?.packages.length,
+      });
       setOffer(loadedOffer);
     } catch (err) {
+      console.error('[useSubscriptions] Error loading offer:', err);
       setError(err instanceof Error ? err : new Error('Failed to load offer'));
     } finally {
       setIsLoading(false);
     }
   }, [offerId]);
 
+  // Load data on mount only - offerings don't change with user
   useEffect(() => {
     loadData();
   }, [loadData]);

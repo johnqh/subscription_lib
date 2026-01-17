@@ -12,6 +12,9 @@ export {
   isSubscriptionInitialized,
   resetSubscription,
   refreshSubscription,
+  setSubscriptionUserId,
+  getSubscriptionUserId,
+  onSubscriptionUserIdChange,
   SubscriptionService,
   type SubscriptionConfig,
   type SubscriptionServiceConfig,
@@ -25,10 +28,13 @@ export {
   useSubscriptionForPeriod,
   useSubscribable,
   type UseSubscriptionsResult,
+  type UseSubscriptionsOptions,
   type UseUserSubscriptionResult,
+  type UseUserSubscriptionOptions,
   type UseSubscriptionPeriodsResult,
   type UseSubscriptionForPeriodResult,
   type UseSubscribableResult,
+  type UseSubscribableOptions,
 } from './hooks';
 
 // Types

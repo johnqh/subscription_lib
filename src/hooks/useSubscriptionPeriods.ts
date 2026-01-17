@@ -7,7 +7,10 @@
 import { useMemo } from 'react';
 import type { SubscriptionPeriod } from '../types/period';
 import { ALL_PERIODS } from '../types/period';
-import { useSubscriptions } from './useSubscriptions';
+import {
+  useSubscriptions,
+  type UseSubscriptionsOptions,
+} from './useSubscriptions';
 
 /**
  * Result of useSubscriptionPeriods hook
@@ -25,11 +28,17 @@ export interface UseSubscriptionPeriodsResult {
  * Hook to get available billing periods from an offer
  *
  * @param offerId Offer identifier
+ * @param options Optional configuration including userId
  * @returns Available periods, sorted from shortest to longest
  *
  * @example
  * ```typescript
  * const { periods, isLoading } = useSubscriptionPeriods('default');
+ *
+ * // With user ID
+ * const { periods, isLoading } = useSubscriptionPeriods('default', {
+ *   userId: user?.uid,
+ * });
  *
  * return (
  *   <SegmentedControl
@@ -41,9 +50,10 @@ export interface UseSubscriptionPeriodsResult {
  * ```
  */
 export function useSubscriptionPeriods(
-  offerId: string
+  offerId: string,
+  options?: UseSubscriptionsOptions
 ): UseSubscriptionPeriodsResult {
-  const { offer, isLoading, error } = useSubscriptions(offerId);
+  const { offer, isLoading, error } = useSubscriptions(offerId, options);
 
   const periods = useMemo(() => {
     if (!offer) return [];
