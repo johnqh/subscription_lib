@@ -76,3 +76,12 @@ export {
   getPackageLevel,
   findUpgradeablePackages,
 } from './utils';
+
+// Adapters (platform-specific)
+export {
+  configureRevenueCatAdapter,
+  createRevenueCatAdapter,
+  setRevenueCatUser,
+  clearRevenueCatUser,
+  hasRevenueCatUser,
+} from './adapters';

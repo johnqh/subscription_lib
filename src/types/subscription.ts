@@ -80,6 +80,8 @@ export interface CurrentSubscription {
   expirationDate?: Date;
   /** Whether subscription will auto-renew */
   willRenew?: boolean;
+  /** URL to manage subscription (upgrade/downgrade/cancel) */
+  managementUrl?: string;
 }
 
 /**

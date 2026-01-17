@@ -148,6 +148,7 @@ export class SubscriptionService {
           ? new Date(firstEntitlement.expirationDate)
           : undefined,
         willRenew: firstEntitlement.willRenew,
+        managementUrl: customerInfo.managementUrl,
       };
     } finally {
       this.isLoadingCustomerInfo = false;

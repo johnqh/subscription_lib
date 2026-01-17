@@ -112,6 +112,8 @@ export interface AdapterCustomerInfo {
     /** Active entitlements map */
     active: Record<string, AdapterEntitlementInfo>;
   };
+  /** URL to manage subscription (upgrade/downgrade/cancel) */
+  managementUrl?: string;
 }
 
 /**
