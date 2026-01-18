@@ -21,6 +21,7 @@ type Package = import('@revenuecat/purchases-js').Package;
 let purchasesInstance: Purchases | null = null;
 let currentUserId: string | null = null;
 let apiKey: string | null = null;
+let pendingUserSetup: string | null = null; // Track in-flight user setup
 
 /**
  * Configure the RevenueCat adapter with API key.
@@ -68,33 +69,44 @@ export async function setRevenueCatUser(
     return;
   }
 
-  // Skip if same user
+  // Skip if same user already set up
   if (currentUserId === userId && purchasesInstance) {
     return;
   }
 
-  currentUserId = userId;
-
-  const SDK = await import('@revenuecat/purchases-js');
-
-  // Close existing instance
-  if (purchasesInstance) {
-    purchasesInstance.close();
+  // Skip if already setting up this user (prevent concurrent calls)
+  if (pendingUserSetup === userId) {
+    return;
   }
 
-  // Configure new instance with user
-  purchasesInstance = SDK.Purchases.configure({
-    apiKey,
-    appUserId: userId,
-  });
+  pendingUserSetup = userId;
 
-  // Set email attribute
-  if (email) {
-    try {
-      await purchasesInstance.setAttributes({ email });
-    } catch {
-      // Ignore attribute errors
+  try {
+    const SDK = await import('@revenuecat/purchases-js');
+
+    // Close existing instance
+    if (purchasesInstance) {
+      purchasesInstance.close();
     }
+
+    // Configure new instance with user
+    purchasesInstance = SDK.Purchases.configure({
+      apiKey,
+      appUserId: userId,
+    });
+
+    currentUserId = userId;
+
+    // Set email attribute
+    if (email) {
+      try {
+        await purchasesInstance.setAttributes({ email });
+      } catch {
+        // Ignore attribute errors
+      }
+    }
+  } finally {
+    pendingUserSetup = null;
   }
 }
 
