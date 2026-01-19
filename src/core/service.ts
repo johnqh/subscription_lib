@@ -120,8 +120,23 @@ export class SubscriptionService {
         return;
       }
 
+      const firstEntitlementId = activeEntitlementIds[0];
+      if (!firstEntitlementId) {
+        this.currentSubscription = {
+          isActive: false,
+          entitlements: [],
+        };
+        return;
+      }
       const firstEntitlement =
-        customerInfo.entitlements.active[activeEntitlementIds[0]];
+        customerInfo.entitlements.active[firstEntitlementId];
+      if (!firstEntitlement) {
+        this.currentSubscription = {
+          isActive: false,
+          entitlements: [],
+        };
+        return;
+      }
 
       // Find the package for this product
       let packageId: string | undefined;

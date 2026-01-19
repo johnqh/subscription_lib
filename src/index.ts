@@ -78,10 +78,20 @@ export {
 } from './utils';
 
 // Adapters (platform-specific)
+// Web adapter
 export {
   configureRevenueCatAdapter,
   createRevenueCatAdapter,
   setRevenueCatUser,
   clearRevenueCatUser,
   hasRevenueCatUser,
+} from './adapters';
+
+// React Native adapter
+export {
+  configureRevenueCatRNAdapter,
+  createRevenueCatRNAdapter,
+  setRevenueCatRNUser,
+  clearRevenueCatRNUser,
+  hasRevenueCatRNUser,
 } from './adapters';

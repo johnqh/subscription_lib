@@ -52,7 +52,7 @@ export function parseISO8601Period(
 
   // Try to parse more complex durations
   const match = normalized.match(/^P(\d+)([DWMY])$/);
-  if (match) {
+  if (match && match[1] && match[2]) {
     const value = parseInt(match[1], 10);
     const unit = match[2];
 
