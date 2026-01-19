@@ -17,15 +17,10 @@ import type {
 } from '../types/adapter.js';
 
 // RevenueCat RN SDK types - using any since module may not be installed
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PurchasesSDK = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RNPackage = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RNOffering = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RNEntitlementInfo = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RNCustomerInfo = any;
 
 // Module state
@@ -71,7 +66,9 @@ async function ensureInitialized(): Promise<PurchasesSDK> {
   }
 
   if (!currentUserId) {
-    throw new Error('RevenueCat user not set. Call setRevenueCatRNUser() first.');
+    throw new Error(
+      'RevenueCat user not set. Call setRevenueCatRNUser() first.'
+    );
   }
 
   if (!configured) {
@@ -173,20 +170,28 @@ function convertPackage(pkg: RNPackage): AdapterPackage {
               id: product.defaultOption.id,
               trial: product.defaultOption.freePhase
                 ? {
-                    periodDuration: product.defaultOption.freePhase.billingPeriod?.iso8601 || null,
+                    periodDuration:
+                      product.defaultOption.freePhase.billingPeriod?.iso8601 ||
+                      null,
                     price: 0,
                     priceString: '$0',
-                    cycleCount: product.defaultOption.freePhase.billingCycleCount || 1,
+                    cycleCount:
+                      product.defaultOption.freePhase.billingCycleCount || 1,
                   }
                 : null,
               introPrice: product.defaultOption.introPhase
                 ? {
-                    periodDuration: product.defaultOption.introPhase.billingPeriod?.iso8601 || null,
+                    periodDuration:
+                      product.defaultOption.introPhase.billingPeriod?.iso8601 ||
+                      null,
                     price: product.defaultOption.introPhase.price?.amountMicros
-                      ? product.defaultOption.introPhase.price.amountMicros / 1_000_000
+                      ? product.defaultOption.introPhase.price.amountMicros /
+                        1_000_000
                       : 0,
-                    priceString: product.defaultOption.introPhase.price?.formatted || '$0',
-                    cycleCount: product.defaultOption.introPhase.billingCycleCount || 1,
+                    priceString:
+                      product.defaultOption.introPhase.price?.formatted || '$0',
+                    cycleCount:
+                      product.defaultOption.introPhase.billingCycleCount || 1,
                   }
                 : null,
             },
@@ -203,14 +208,18 @@ function convertOffering(offering: RNOffering): AdapterOffering {
   return {
     identifier: offering.identifier,
     metadata: offering.metadata || null,
-    availablePackages: offering.availablePackages.map((pkg: RNPackage) => convertPackage(pkg)),
+    availablePackages: offering.availablePackages.map((pkg: RNPackage) =>
+      convertPackage(pkg)
+    ),
   };
 }
 
 /**
  * Convert RN entitlement to adapter format.
  */
-function convertEntitlement(entitlement: RNEntitlementInfo): AdapterEntitlementInfo {
+function convertEntitlement(
+  entitlement: RNEntitlementInfo
+): AdapterEntitlementInfo {
   return {
     identifier: entitlement.identifier,
     productIdentifier: entitlement.productIdentifier,
@@ -257,7 +266,9 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
 
         return {
           all,
-          current: offerings.current ? convertOffering(offerings.current) : null,
+          current: offerings.current
+            ? convertOffering(offerings.current)
+            : null,
         };
       } catch (error) {
         console.error('[revenuecat-rn] Failed to get offerings:', error);
@@ -277,7 +288,9 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
 
         const active: AdapterCustomerInfo['entitlements']['active'] = {};
 
-        for (const [id, entitlement] of Object.entries(customerInfo.entitlements.active)) {
+        for (const [id, entitlement] of Object.entries(
+          customerInfo.entitlements.active
+        )) {
           active[id] = convertEntitlement(entitlement as RNEntitlementInfo);
         }
 
@@ -295,7 +308,9 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
       }
     },
 
-    async purchase(params: AdapterPurchaseParams): Promise<AdapterPurchaseResult> {
+    async purchase(
+      params: AdapterPurchaseParams
+    ): Promise<AdapterPurchaseResult> {
       const sdk = await ensureInitialized();
 
       // Find the package across all offerings
@@ -318,7 +333,9 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
 
       // Convert customer info
       const active: AdapterCustomerInfo['entitlements']['active'] = {};
-      for (const [id, entitlement] of Object.entries(customerInfo.entitlements.active)) {
+      for (const [id, entitlement] of Object.entries(
+        customerInfo.entitlements.active
+      )) {
         active[id] = convertEntitlement(entitlement as RNEntitlementInfo);
       }
 
