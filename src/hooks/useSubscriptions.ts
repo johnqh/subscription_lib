@@ -72,7 +72,6 @@ export function useSubscriptions(
 
   const loadData = useCallback(async () => {
     if (!isSubscriptionInitialized()) {
-      console.log('[useSubscriptions] Subscription not initialized');
       setError(new Error('Subscription not initialized'));
       setIsLoading(false);
       return;
@@ -83,10 +82,6 @@ export function useSubscriptions(
     // If we already have this offer cached, use it without refetching
     const cachedOffer = service.getOffer(offerId);
     if (cachedOffer) {
-      console.log('[useSubscriptions] Using cached offer:', {
-        offerId,
-        packageCount: cachedOffer.packages.length,
-      });
       setOffer(cachedOffer);
       setIsLoading(false);
       return;
@@ -98,20 +93,12 @@ export function useSubscriptions(
 
       // Load offerings only if not already loaded
       if (!service.hasLoadedOfferings()) {
-        console.log('[useSubscriptions] Loading offerings...');
         await service.loadOfferings();
-        console.log('[useSubscriptions] Offerings loaded');
       }
 
       const loadedOffer = service.getOffer(offerId);
-      console.log('[useSubscriptions] Got offer:', {
-        offerId,
-        hasOffer: !!loadedOffer,
-        packageCount: loadedOffer?.packages.length,
-      });
       setOffer(loadedOffer);
     } catch (err) {
-      console.error('[useSubscriptions] Error loading offer:', err);
       setError(err instanceof Error ? err : new Error('Failed to load offer'));
     } finally {
       setIsLoading(false);

@@ -144,19 +144,12 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     async getOfferings(): Promise<AdapterOfferings> {
       // Return empty offerings if no user is set
       if (!currentUserId) {
-        console.log('[revenuecat-web] No user set, returning empty offerings');
         return { all: {}, current: null };
       }
 
       try {
         const purchases = await ensureInitialized();
         const offerings = await purchases.getOfferings();
-
-        console.log('[revenuecat-web] Raw offerings from RevenueCat:', {
-          allKeys: Object.keys(offerings.all),
-          currentIdentifier: offerings.current?.identifier,
-          currentPackageCount: offerings.current?.availablePackages.length,
-        });
 
         const convertPackage = (pkg: Package) => ({
           identifier: pkg.identifier,

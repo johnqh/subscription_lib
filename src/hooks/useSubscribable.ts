@@ -91,17 +91,7 @@ export function useSubscribable(
   const error = offerError || subError;
 
   const subscribablePackageIds = useMemo(() => {
-    console.log('[useSubscribable] Computing subscribablePackageIds:', {
-      offerId,
-      hasOffer: !!offer,
-      offerPackageCount: offer?.packages.length ?? 0,
-      offerPackageIds: offer?.packages.map(p => p.packageId),
-      subscription,
-      isSubscriptionInitialized: isSubscriptionInitialized(),
-    });
-
     if (!offer) {
-      console.log('[useSubscribable] No offer, returning empty array');
       return [];
     }
 
@@ -112,26 +102,15 @@ export function useSubscribable(
     if (isSubscriptionInitialized()) {
       const service = getSubscriptionInstance();
       const freeTier = service.getFreeTierPackage();
-      console.log('[useSubscribable] Free tier:', freeTier);
       // Only add if not already in the list
       if (!allPackages.some(p => p.packageId === freeTier.packageId)) {
         allPackages = [freeTier, ...allPackages];
       }
     }
 
-    console.log(
-      '[useSubscribable] All packages:',
-      allPackages.map(p => p.packageId)
-    );
-
     // No subscription or inactive = all packages subscribable
     if (!subscription || !subscription.isActive) {
-      const result = allPackages.map(p => p.packageId);
-      console.log(
-        '[useSubscribable] No active subscription, returning all:',
-        result
-      );
-      return result;
+      return allPackages.map(p => p.packageId);
     }
 
     // Pass both packageId and productId for matching
@@ -142,18 +121,11 @@ export function useSubscribable(
 
     // If we don't know the current package or product, return all (shouldn't happen)
     if (!current.packageId && !current.productId) {
-      const result = allPackages.map(p => p.packageId);
-      console.log(
-        '[useSubscribable] No current package/product, returning all:',
-        result
-      );
-      return result;
+      return allPackages.map(p => p.packageId);
     }
 
     // Calculate upgradeable packages
-    const result = findUpgradeablePackages(current, allPackages);
-    console.log('[useSubscribable] Upgradeable packages:', result);
-    return result;
+    return findUpgradeablePackages(current, allPackages);
   }, [offer, subscription]);
 
   return { subscribablePackageIds, isLoading, error };
