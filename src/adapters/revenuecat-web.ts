@@ -32,6 +32,9 @@ export function configureRevenueCatAdapter(revenueCatApiKey: string): void {
   apiKey = revenueCatApiKey;
 }
 
+// Anonymous user ID for fetching offerings without authentication
+const ANONYMOUS_USER_ID = '$RCAnonymousID:pricing_viewer';
+
 /**
  * Lazily initialize RevenueCat SDK when first needed.
  * Can be initialized without a user for anonymous offerings fetch.
@@ -48,10 +51,11 @@ async function ensureInitialized(requireUser = false): Promise<Purchases> {
 
   if (!purchasesInstance) {
     const SDK = await import('@revenuecat/purchases-js');
-    // Configure with user if available, otherwise anonymous
-    purchasesInstance = currentUserId
-      ? SDK.Purchases.configure({ apiKey, appUserId: currentUserId })
-      : SDK.Purchases.configure({ apiKey } as any);
+    // Configure with user if available, otherwise use anonymous ID for offerings
+    purchasesInstance = SDK.Purchases.configure({
+      apiKey,
+      appUserId: currentUserId || ANONYMOUS_USER_ID,
+    });
   }
 
   return purchasesInstance;

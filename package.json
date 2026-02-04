@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/subscription_lib",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Cross-platform subscription management with RevenueCat adapter pattern",
   "type": "module",
   "main": "./dist/index.js",
@@ -63,5 +63,5 @@
     "type": "git",
     "url": "https://github.com/sudobility/subscription_lib.git"
   },
-  "license": "MIT"
+  "license": "BUSL-1.1"
 }
