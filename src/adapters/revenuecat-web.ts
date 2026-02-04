@@ -34,23 +34,24 @@ export function configureRevenueCatAdapter(revenueCatApiKey: string): void {
 
 /**
  * Lazily initialize RevenueCat SDK when first needed.
- * Requires a user to be set first via setRevenueCatUser().
+ * Can be initialized without a user for anonymous offerings fetch.
+ * @param requireUser - If true, throws if no user is set (for purchase/customer info)
  */
-async function ensureInitialized(): Promise<Purchases> {
+async function ensureInitialized(requireUser = false): Promise<Purchases> {
   if (!apiKey) {
     throw new Error('RevenueCat not configured');
   }
 
-  if (!currentUserId) {
+  if (requireUser && !currentUserId) {
     throw new Error('RevenueCat user not set. Call setRevenueCatUser() first.');
   }
 
   if (!purchasesInstance) {
     const SDK = await import('@revenuecat/purchases-js');
-    purchasesInstance = SDK.Purchases.configure({
-      apiKey,
-      appUserId: currentUserId,
-    });
+    // Configure with user if available, otherwise anonymous
+    purchasesInstance = currentUserId
+      ? SDK.Purchases.configure({ apiKey, appUserId: currentUserId })
+      : SDK.Purchases.configure({ apiKey } as any);
   }
 
   return purchasesInstance;
@@ -142,13 +143,9 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     },
 
     async getOfferings(): Promise<AdapterOfferings> {
-      // Return empty offerings if no user is set
-      if (!currentUserId) {
-        return { all: {}, current: null };
-      }
-
+      // Allow anonymous offerings fetch - product catalog doesn't require a user
       try {
-        const purchases = await ensureInitialized();
+        const purchases = await ensureInitialized(false);
         const offerings = await purchases.getOfferings();
 
         const convertPackage = (pkg: Package) => ({
@@ -247,7 +244,7 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
       }
 
       try {
-        const purchases = await ensureInitialized();
+        const purchases = await ensureInitialized(true);
         const customerInfo = await purchases.getCustomerInfo();
 
         const active: AdapterCustomerInfo['entitlements']['active'] = {};
@@ -281,7 +278,7 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     async purchase(
       params: AdapterPurchaseParams
     ): Promise<AdapterPurchaseResult> {
-      const purchases = await ensureInitialized();
+      const purchases = await ensureInitialized(true);
 
       // Find the package across all offerings
       const offerings = await purchases.getOfferings();
