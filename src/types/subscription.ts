@@ -4,7 +4,7 @@
  * Clean abstraction types for subscription data, independent of RevenueCat SDK.
  */
 
-import type { SubscriptionPeriod } from './period';
+import type { SubscriptionPeriod } from '@sudobility/types';
 
 /**
  * Product pricing and billing information

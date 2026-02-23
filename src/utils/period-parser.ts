@@ -4,8 +4,8 @@
  * Parse ISO 8601 duration strings to standard subscription periods.
  */
 
-import type { SubscriptionPeriod } from '../types/period';
-import { PERIOD_RANKS } from '../types/period';
+import type { SubscriptionPeriod } from '@sudobility/types';
+import { PERIOD_RANKS } from '@sudobility/types';
 
 /**
  * Parse ISO 8601 duration string to SubscriptionPeriod

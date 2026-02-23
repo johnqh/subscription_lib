@@ -8,7 +8,7 @@ import type {
   PackageWithLevel,
   SubscriptionPackage,
 } from '../types/subscription';
-import type { SubscriptionPeriod } from '../types/period';
+import type { SubscriptionPeriod } from '@sudobility/types';
 
 /**
  * Calculate entitlement levels for packages

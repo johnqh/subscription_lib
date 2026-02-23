@@ -59,11 +59,7 @@ export type {
   CurrentSubscription,
   FreeTierConfig,
   PackageWithLevel,
-  // Period types
-  SubscriptionPeriod,
 } from './types';
-
-export { PERIOD_RANKS, ALL_PERIODS } from './types';
 
 // Utils
 export {

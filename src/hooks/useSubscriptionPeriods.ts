@@ -5,8 +5,8 @@
  */
 
 import { useMemo } from 'react';
-import type { SubscriptionPeriod } from '../types/period';
-import { ALL_PERIODS } from '../types/period';
+import type { SubscriptionPeriod } from '@sudobility/types';
+import { ALL_PERIODS } from '@sudobility/types';
 import {
   useSubscriptions,
   type UseSubscriptionsOptions,

@@ -26,7 +26,3 @@ export type {
   FreeTierConfig,
   PackageWithLevel,
 } from './subscription';
-
-// Period types
-export type { SubscriptionPeriod } from './period';
-export { PERIOD_RANKS, ALL_PERIODS } from './period';
