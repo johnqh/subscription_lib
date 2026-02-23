@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/subscription_lib",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Cross-platform subscription management with RevenueCat adapter pattern",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,7 +26,8 @@
     "format": "bunx prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "bun run build"
+    "verify": "bun run typecheck && bun run lint && bun run test && bun run build",
+    "prepublishOnly": "bun run verify"
   },
   "peerDependencies": {
     "@sudobility/types": "^1.9.54",

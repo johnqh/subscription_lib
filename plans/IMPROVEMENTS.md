@@ -2,23 +2,23 @@
 
 ## Priority 1: Code Quality
 
-### 1.1 Remove duplicate period rank mapping in `findUpgradeablePackages`
+### 1.1 Remove duplicate period rank mapping in `findUpgradeablePackages` -- DONE
 - **File**: `src/utils/level-calculator.ts`
 - **Issue**: `findUpgradeablePackages()` defines a local `periodRanks` object instead of importing `PERIOD_RANKS` from `@sudobility/types`. This creates a maintenance burden where adding a new period requires updating two places.
 - **Fix**: Import `PERIOD_RANKS` from `@sudobility/types` and use it directly.
 
-### 1.2 Add a `verify` script
+### 1.2 Add a `verify` script -- DONE
 - **Issue**: Unlike other projects in the ecosystem, `subscription_lib` does not have a `bun run verify` script that runs all checks in sequence.
 - **Fix**: Add `"verify": "bun run typecheck && bun run lint && bun run test && bun run build"` to `package.json` scripts.
 
-### 1.3 Remove the deprecated `refetch` alias from `useUserSubscription`
+### 1.3 Remove the deprecated `refetch` alias from `useUserSubscription` -- DONE
 - **File**: `src/hooks/useUserSubscription.ts`
 - **Issue**: The hook returns both `update` and `refetch` (identical functions). The `refetch` alias is marked `@deprecated` but still exported.
 - **Fix**: Plan a breaking change to remove `refetch` from the return type in a future minor version. Add a console warning when accessed.
 
 ## Priority 2: Testing
 
-### 2.1 Add tests for `level-calculator.ts`
+### 2.1 Add tests for `level-calculator.ts` -- DONE
 - **File**: `src/utils/level-calculator.ts`
 - **Issue**: No test file exists for the level calculator utilities. These contain complex logic for calculating package levels and upgrade eligibility.
 - **Fix**: Create `src/utils/level-calculator.test.ts` covering `calculatePackageLevels`, `addLevelsToPackages`, `getPackageLevel`, and `findUpgradeablePackages` with edge cases (same prices, mixed periods, free tier handling, productId fallback matching).
@@ -52,7 +52,7 @@
 - **Issue**: Vitest configuration is inferred (no `vitest.config.ts`). This works but makes it harder to customize test behavior (e.g., coverage, setup files).
 - **Fix**: Add a `vitest.config.ts` with explicit configuration.
 
-### 4.2 Add `prepublishOnly` that runs verify
+### 4.2 Add `prepublishOnly` that runs verify -- DONE
 - **Issue**: The `prepublishOnly` script only runs `bun run build`. It should run the full verification suite.
 - **Fix**: Change to `"prepublishOnly": "bun run verify"` (after adding the verify script).
 

@@ -41,6 +41,8 @@ export interface UseUserSubscriptionOptions {
   userEmail?: string;
 }
 
+let refetchWarned = false;
+
 /**
  * Hook to get current user's subscription status
  *
@@ -168,5 +170,19 @@ export function useUserSubscription(
     }
   }, []);
 
-  return { subscription, isLoading, error, update, refetch: update };
+  return {
+    subscription,
+    isLoading,
+    error,
+    update,
+    get refetch() {
+      if (!refetchWarned) {
+        console.warn(
+          "useUserSubscription: 'refetch' is deprecated, use 'update' instead"
+        );
+        refetchWarned = true;
+      }
+      return update;
+    },
+  };
 }

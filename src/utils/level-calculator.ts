@@ -11,6 +11,7 @@ import type {
   SubscriptionPackage,
 } from '../types/subscription';
 import type { SubscriptionPeriod } from '@sudobility/types';
+import { PERIOD_RANKS } from '@sudobility/types';
 
 /**
  * Calculate entitlement levels for packages.
@@ -203,15 +204,7 @@ export function findUpgradeablePackages(
     const pkgPeriod = pkg.product.period;
 
     // Must have >= period and >= level
-    const periodRanks: Record<SubscriptionPeriod, number> = {
-      weekly: 1,
-      monthly: 2,
-      quarterly: 3,
-      yearly: 4,
-      lifetime: 5,
-    };
-
-    const isPeriodOk = periodRanks[pkgPeriod] >= periodRanks[currentPeriod];
+    const isPeriodOk = PERIOD_RANKS[pkgPeriod] >= PERIOD_RANKS[currentPeriod];
     const isLevelOk = pkgLevel >= currentLevel;
 
     if (isPeriodOk && isLevelOk) {
