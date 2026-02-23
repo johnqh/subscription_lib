@@ -5,7 +5,7 @@
 Cross-platform subscription management library that abstracts RevenueCat SDK differences between web (`@revenuecat/purchases-js`) and React Native (`react-native-purchases`) behind a unified adapter interface. Provides React hooks for fetching offerings, tracking user subscription status, filtering by billing period, and determining upgrade eligibility. Consumers supply a platform-specific adapter at initialization time and interact with subscriptions through a clean, SDK-agnostic API.
 
 - **Package**: `@sudobility/subscription_lib`
-- **Version**: 0.0.14
+- **Version**: 0.0.16
 - **License**: BUSL-1.1
 - **Package Manager**: Bun
 - **Registry**: npm (public, `@sudobility` scope)
@@ -33,8 +33,7 @@ src/
 ├── types/
 │   ├── index.ts                      # Types barrel export
 │   ├── adapter.ts                    # SubscriptionAdapter interface + adapter DTOs
-│   ├── subscription.ts               # Domain types (Product, Package, Offer, CurrentSubscription)
-│   └── period.ts                     # SubscriptionPeriod type, PERIOD_RANKS, ALL_PERIODS
+│   └── subscription.ts              # Domain types (Product, Package, Offer, CurrentSubscription)
 └── utils/
     ├── index.ts                      # Utils barrel export
     ├── period-parser.ts              # ISO 8601 duration -> SubscriptionPeriod
@@ -94,7 +93,7 @@ src/
 
 - **Adapter**: `SubscriptionAdapter`, `AdapterOfferings`, `AdapterOffering`, `AdapterPackage`, `AdapterProduct`, `AdapterSubscriptionOption`, `AdapterPricingPhase`, `AdapterCustomerInfo`, `AdapterEntitlementInfo`, `AdapterPurchaseParams`, `AdapterPurchaseResult`
 - **Domain**: `SubscriptionProduct`, `SubscriptionPackage`, `SubscriptionOffer`, `CurrentSubscription`, `FreeTierConfig`, `PackageWithLevel`
-- **Period**: `SubscriptionPeriod` (union: `'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'lifetime'`), `PERIOD_RANKS`, `ALL_PERIODS`
+- **Period**: `SubscriptionPeriod` (union: `'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'lifetime'`), `PERIOD_RANKS`, `ALL_PERIODS` (from `@sudobility/types` peer dep)
 - **Config**: `SubscriptionConfig`, `SubscriptionServiceConfig`
 
 ## Development Commands
@@ -183,9 +182,10 @@ Complex day/week durations are also handled (e.g., `P30D` -> `monthly`, `P365D` 
 ### TypeScript Configuration
 
 - Target: ES2020, Module: ESNext, JSX: react-jsx
+- Module resolution: bundler
 - Full strict mode enabled (`strict`, `noImplicitAny`, `strictNullChecks`, `noUncheckedIndexedAccess`, etc.)
 - `noUnusedLocals` and `noUnusedParameters` enforced
-- Source maps enabled; comments removed in output
+- Source maps and declaration maps enabled; comments removed in output
 - Test files (`*.test.ts`, `*.spec.ts`) excluded from compilation
 
 ### Code Style
@@ -211,8 +211,8 @@ Complex day/week durations are also handled (e.g., `P30D` -> `monthly`, `P365D` 
 
 ### Adding a new subscription period
 
-1. Add the value to the `SubscriptionPeriod` union in `src/types/period.ts`
-2. Add its rank to `PERIOD_RANKS` and position in `ALL_PERIODS`
+1. Add the value to the `SubscriptionPeriod` union in `@sudobility/types` (external peer dependency)
+2. Add its rank to `PERIOD_RANKS` and position in `ALL_PERIODS` (also in `@sudobility/types`)
 3. Add ISO 8601 parsing rules in `src/utils/period-parser.ts`
 4. Add test cases in `src/utils/period-parser.test.ts`
 
@@ -229,6 +229,7 @@ Complex day/week durations are also handled (e.g., `P30D` -> `monthly`, `P365D` 
 | Package | Version | Required |
 |---|---|---|
 | `react` | `^18.0.0 \|\| ^19.0.0` | Yes |
+| `@sudobility/types` | `^1.9.53` | Yes |
 | `@revenuecat/purchases-js` | `^1.0.0` | Optional (web only) |
 | `react-native-purchases` | `>=7.0.0` | Optional (RN only) |
 
@@ -242,7 +243,12 @@ Complex day/week durations are also handled (e.g., `P30D` -> `monthly`, `P365D` 
 | `prettier` ^3.0.0 | Formatter |
 | `@types/react` ^19.2.5 | React type definitions |
 | `@types/bun` ^1.2.8 | Bun runtime types |
+| `@types/node` ^22.0.0 | Node.js type definitions |
 | `@revenuecat/purchases-js` ^1.1.3 | RevenueCat web SDK (for adapter development) |
+| `@typescript-eslint/eslint-plugin` ^8.0.0 | TypeScript-aware ESLint rules |
+| `@typescript-eslint/parser` ^8.0.0 | TypeScript ESLint parser |
+| `eslint-config-prettier` ^10.0.0 | Disables ESLint rules that conflict with Prettier |
+| `eslint-plugin-prettier` ^5.0.0 | Runs Prettier as ESLint rule |
 
 ### Downstream Consumers
 
@@ -254,3 +260,13 @@ building_blocks (uses hooks)
     ^
 shapeshyft_app, mail_box (consume components)
 ```
+
+## Gotchas
+
+- **`@sudobility/types` is a required peer dependency** -- `SubscriptionPeriod`, `PERIOD_RANKS`, and `ALL_PERIODS` are imported from it. Ensure it is installed in consuming apps.
+- **Web adapter supports anonymous offerings fetch** -- `ensureInitialized(false)` uses a hardcoded anonymous user ID (`$RCAnonymousID:pricing_viewer`) so product catalogs can be fetched before login.
+- **RN adapter requires user before fetching offerings** -- Unlike the web adapter, the React Native adapter returns empty offerings if no user is set.
+- **Web adapter uses `pendingUserSetup` guard** -- Prevents concurrent `setRevenueCatUser()` calls from racing.
+- **`useUserSubscription` has a deprecated `refetch` alias** -- It returns both `update` and `refetch` (identical); prefer `update`.
+- **`findUpgradeablePackages` has a local `periodRanks` copy** -- It duplicates the period rank mapping rather than importing from `@sudobility/types`. Keep in sync.
+- **ESM-only output** -- No CJS build. The `exports` field only provides `import` and `types` conditions.

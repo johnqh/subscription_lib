@@ -1,7 +1,9 @@
 /**
- * Level Calculator Utilities
+ * @fileoverview Level Calculator Utilities
  *
  * Calculate entitlement levels based on price comparison within the same period.
+ * Used to determine upgrade eligibility by comparing package levels across
+ * different subscription tiers.
  */
 
 import type {
@@ -11,13 +13,13 @@ import type {
 import type { SubscriptionPeriod } from '@sudobility/types';
 
 /**
- * Calculate entitlement levels for packages
+ * Calculate entitlement levels for packages.
  *
  * Level is determined by comparing prices of packages with the same period.
  * Higher price = higher level. Free tier always has level 0.
  *
- * @param packages List of packages to calculate levels for
- * @returns Map of packageId to level
+ * @param packages - List of packages to calculate levels for.
+ * @returns Map of packageId to level number.
  *
  * @example
  * // Given packages:
@@ -88,10 +90,10 @@ export function calculatePackageLevels(
 }
 
 /**
- * Add level information to packages
+ * Add level information to packages.
  *
- * @param packages List of packages
- * @returns Packages with level information
+ * @param packages - List of subscription packages.
+ * @returns New array of packages with an added `level` property.
  */
 export function addLevelsToPackages(
   packages: SubscriptionPackage[]
@@ -105,11 +107,11 @@ export function addLevelsToPackages(
 }
 
 /**
- * Get the level of a specific package
+ * Get the level of a specific package.
  *
- * @param packageId Package ID to look up
- * @param packages All packages for context
- * @returns Level number (0 for free, higher = better)
+ * @param packageId - Package ID to look up.
+ * @param packages - All packages for context (needed to calculate relative levels).
+ * @returns Level number (0 for free, higher = better).
  */
 export function getPackageLevel(
   packageId: string,
@@ -120,7 +122,7 @@ export function getPackageLevel(
 }
 
 /**
- * Parameters for findUpgradeablePackages
+ * Parameters for findUpgradeablePackages.
  */
 export interface FindUpgradeableParams {
   /** Current package ID */
@@ -130,15 +132,15 @@ export interface FindUpgradeableParams {
 }
 
 /**
- * Find packages that are upgrades from the current package
+ * Find packages that are upgrades from the current package.
  *
  * A package is an upgrade if:
  * - Its period is >= current period, AND
  * - Its level is >= current level (but not the exact same package)
  *
- * @param current Current package/product identifiers (or null/undefined for no subscription)
- * @param packages All available packages
- * @returns List of package IDs that are valid upgrades
+ * @param current - Current package/product identifiers, a string packageId, or null/undefined for no subscription.
+ * @param packages - All available packages to evaluate.
+ * @returns Array of package IDs that are valid upgrades.
  */
 export function findUpgradeablePackages(
   current: string | FindUpgradeableParams | null | undefined,
