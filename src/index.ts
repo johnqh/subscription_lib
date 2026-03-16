@@ -28,6 +28,7 @@ export {
   useSubscriptionPeriods,
   useSubscriptionForPeriod,
   useSubscribable,
+  useEntitlements,
   type UseSubscriptionsResult,
   type UseSubscriptionsOptions,
   type UseUserSubscriptionResult,
@@ -36,6 +37,7 @@ export {
   type UseSubscriptionForPeriodResult,
   type UseSubscribableResult,
   type UseSubscribableOptions,
+  type UseEntitlementsResult,
 } from './hooks';
 
 // Types

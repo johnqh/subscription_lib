@@ -29,3 +29,5 @@ export {
   type UseSubscribableResult,
   type UseSubscribableOptions,
 } from './useSubscribable';
+
+export { useEntitlements, type UseEntitlementsResult } from './useEntitlements';
