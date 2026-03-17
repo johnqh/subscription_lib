@@ -104,6 +104,38 @@ export async function refreshSubscription(): Promise<void> {
 }
 
 /**
+ * Restore purchases from the App Store / Play Store.
+ * Re-syncs with the store and updates subscription state.
+ *
+ * @returns Updated subscription state, or null if not initialized
+ *
+ * @example
+ * ```typescript
+ * import { restoreSubscription } from '@sudobility/subscription_lib';
+ *
+ * const result = await restoreSubscription();
+ * if (result?.isActive) {
+ *   // Purchases restored successfully
+ * }
+ * ```
+ */
+export async function restoreSubscription(): Promise<
+  import('../types/subscription').CurrentSubscription | null
+> {
+  if (!instance) {
+    return null;
+  }
+  const result = await instance.restorePurchases();
+
+  // Notify listeners that subscription data has been refreshed
+  for (const listener of subscriptionRefreshListeners) {
+    listener();
+  }
+
+  return result;
+}
+
+/**
  * Set the user ID for the subscription service.
  * This will re-initialize RevenueCat with the new user and reload customer info.
  * Offerings (product catalog) are preserved since they don't change with user.

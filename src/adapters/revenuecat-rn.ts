@@ -346,5 +346,27 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
         },
       };
     },
+
+    async restorePurchases(): Promise<AdapterCustomerInfo> {
+      if (!currentUserId) {
+        return { activeSubscriptions: [], entitlements: { active: {} } };
+      }
+
+      const sdk = await ensureInitialized();
+      const customerInfo: RNCustomerInfo = await sdk.restorePurchases();
+
+      const active: AdapterCustomerInfo['entitlements']['active'] = {};
+      for (const [id, entitlement] of Object.entries(
+        customerInfo.entitlements.active
+      )) {
+        active[id] = convertEntitlement(entitlement as RNEntitlementInfo);
+      }
+
+      return {
+        activeSubscriptions: customerInfo.activeSubscriptions,
+        entitlements: { active },
+        managementUrl: customerInfo.managementURL ?? undefined,
+      };
+    },
   };
 }

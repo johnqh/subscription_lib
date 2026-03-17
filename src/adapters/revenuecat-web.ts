@@ -325,5 +325,10 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
         },
       };
     },
+
+    async restorePurchases(): Promise<AdapterCustomerInfo> {
+      // Web SDK has no native restore — re-fetch customer info instead
+      return this.getCustomerInfo();
+    },
   };
 }

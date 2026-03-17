@@ -167,4 +167,11 @@ export interface SubscriptionAdapter {
    * @param email Optional email for the user
    */
   setUserId?(userId: string | undefined, email?: string): Promise<void>;
+
+  /**
+   * Restore purchases from the App Store / Play Store.
+   * On native platforms this re-syncs with the store; on web it falls back to getCustomerInfo.
+   * @returns Updated customer info after restore
+   */
+  restorePurchases?(): Promise<AdapterCustomerInfo>;
 }

@@ -10,6 +10,7 @@ export {
   isSubscriptionInitialized,
   resetSubscription,
   refreshSubscription,
+  restoreSubscription,
   setSubscriptionUserId,
   getSubscriptionUserId,
   onSubscriptionUserIdChange,

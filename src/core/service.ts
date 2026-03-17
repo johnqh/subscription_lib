@@ -108,66 +108,32 @@ export class SubscriptionService {
       }
 
       const customerInfo = await this.adapter.getCustomerInfo();
-      const activeEntitlementIds = Object.keys(
-        customerInfo.entitlements.active
-      );
-
-      if (activeEntitlementIds.length === 0) {
-        this.currentSubscription = {
-          isActive: false,
-          entitlements: [],
-        };
-        return;
-      }
-
-      const firstEntitlementId = activeEntitlementIds[0];
-      if (!firstEntitlementId) {
-        this.currentSubscription = {
-          isActive: false,
-          entitlements: [],
-        };
-        return;
-      }
-      const firstEntitlement =
-        customerInfo.entitlements.active[firstEntitlementId];
-      if (!firstEntitlement) {
-        this.currentSubscription = {
-          isActive: false,
-          entitlements: [],
-        };
-        return;
-      }
-
-      // Find the package for this product
-      let packageId: string | undefined;
-      let period: CurrentSubscription['period'];
-
-      for (const offer of this.offersCache.values()) {
-        const pkg = offer.packages.find(
-          p => p.product?.productId === firstEntitlement.productIdentifier
-        );
-        if (pkg) {
-          packageId = pkg.packageId;
-          period = pkg.product?.period;
-          break;
-        }
-      }
-
-      this.currentSubscription = {
-        isActive: true,
-        productId: firstEntitlement.productIdentifier,
-        packageId,
-        entitlements: activeEntitlementIds,
-        period,
-        expirationDate: firstEntitlement.expirationDate
-          ? new Date(firstEntitlement.expirationDate)
-          : undefined,
-        willRenew: firstEntitlement.willRenew,
-        managementUrl: customerInfo.managementUrl,
-      };
+      this.updateSubscriptionFromCustomerInfo(customerInfo);
     } finally {
       this.isLoadingCustomerInfo = false;
     }
+  }
+
+  /**
+   * Restore purchases from the App Store / Play Store.
+   * On native platforms this re-syncs with the store.
+   * Returns the updated subscription state.
+   */
+  async restorePurchases(): Promise<CurrentSubscription> {
+    // Ensure offerings are loaded first so we can match packageId
+    if (!this.hasLoadedOfferings()) {
+      await this.loadOfferings();
+    }
+
+    let customerInfo;
+    if (this.adapter.restorePurchases) {
+      customerInfo = await this.adapter.restorePurchases();
+    } else {
+      customerInfo = await this.adapter.getCustomerInfo();
+    }
+
+    this.updateSubscriptionFromCustomerInfo(customerInfo);
+    return this.currentSubscription!;
   }
 
   // ---------------------------------------------------------------------------
@@ -253,6 +219,66 @@ export class SubscriptionService {
   // ---------------------------------------------------------------------------
   // Private Helpers
   // ---------------------------------------------------------------------------
+
+  private updateSubscriptionFromCustomerInfo(
+    customerInfo: import('../types/adapter').AdapterCustomerInfo
+  ): void {
+    const activeEntitlementIds = Object.keys(customerInfo.entitlements.active);
+
+    if (activeEntitlementIds.length === 0) {
+      this.currentSubscription = {
+        isActive: false,
+        entitlements: [],
+      };
+      return;
+    }
+
+    const firstEntitlementId = activeEntitlementIds[0];
+    if (!firstEntitlementId) {
+      this.currentSubscription = {
+        isActive: false,
+        entitlements: [],
+      };
+      return;
+    }
+    const firstEntitlement =
+      customerInfo.entitlements.active[firstEntitlementId];
+    if (!firstEntitlement) {
+      this.currentSubscription = {
+        isActive: false,
+        entitlements: [],
+      };
+      return;
+    }
+
+    // Find the package for this product
+    let packageId: string | undefined;
+    let period: CurrentSubscription['period'];
+
+    for (const offer of this.offersCache.values()) {
+      const pkg = offer.packages.find(
+        p => p.product?.productId === firstEntitlement.productIdentifier
+      );
+      if (pkg) {
+        packageId = pkg.packageId;
+        period = pkg.product?.period;
+        break;
+      }
+    }
+
+    this.currentSubscription = {
+      isActive: true,
+      productId: firstEntitlement.productIdentifier,
+      packageId,
+      entitlements: activeEntitlementIds,
+      period,
+      expirationDate: firstEntitlement.expirationDate
+        ? new Date(firstEntitlement.expirationDate)
+        : undefined,
+      willRenew: firstEntitlement.willRenew,
+      managementUrl: customerInfo.managementUrl,
+    };
+  }
 
   private parseOffering(
     offerId: string,
