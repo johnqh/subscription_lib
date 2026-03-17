@@ -133,7 +133,10 @@ export class SubscriptionService {
     }
 
     this.updateSubscriptionFromCustomerInfo(customerInfo);
-    return this.currentSubscription!;
+    return (this.currentSubscription ?? {
+      isActive: false,
+      entitlements: [],
+    }) as CurrentSubscription;
   }
 
   // ---------------------------------------------------------------------------
