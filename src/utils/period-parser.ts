@@ -85,6 +85,44 @@ export function parseISO8601Period(
 }
 
 /**
+ * Parse RevenueCat packageType to SubscriptionPeriod.
+ * Package types follow the pattern "$rc_monthly", "$rc_annual", etc.
+ *
+ * @param packageType RevenueCat package type string
+ * @returns Parsed SubscriptionPeriod, or null if not recognized
+ */
+export function packageTypeToPeriod(
+  packageType: string | null | undefined
+): SubscriptionPeriod | null {
+  if (!packageType) return null;
+
+  const normalized = packageType.toLowerCase();
+
+  if (normalized.includes('weekly') || normalized === '$rc_weekly')
+    return 'weekly';
+  if (normalized.includes('monthly') || normalized === '$rc_monthly')
+    return 'monthly';
+  if (
+    normalized.includes('three_month') ||
+    normalized.includes('quarterly') ||
+    normalized === '$rc_three_month'
+  )
+    return 'quarterly';
+  if (
+    normalized.includes('annual') ||
+    normalized.includes('yearly') ||
+    normalized === '$rc_annual'
+  )
+    return 'yearly';
+  if (normalized.includes('lifetime') || normalized === '$rc_lifetime')
+    return 'lifetime';
+  if (normalized.includes('six_month') || normalized === '$rc_six_month')
+    return 'quarterly'; // Treat 6 months as quarterly for simplicity
+
+  return null;
+}
+
+/**
  * Get numeric rank for a period (higher = longer)
  *
  * @param period SubscriptionPeriod

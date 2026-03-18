@@ -4,6 +4,7 @@
 
 export {
   parseISO8601Period,
+  packageTypeToPeriod,
   getPeriodRank,
   comparePeriods,
   isPeriodGreaterOrEqual,

@@ -18,7 +18,10 @@ import type {
   SubscriptionPackage,
   SubscriptionProduct,
 } from '../types/subscription';
-import { parseISO8601Period } from '../utils/period-parser';
+import {
+  packageTypeToPeriod,
+  parseISO8601Period,
+} from '../utils/period-parser';
 
 /**
  * Configuration for SubscriptionService
@@ -326,6 +329,13 @@ export class SubscriptionService {
       ? Object.values(product.subscriptionOptions)[0]
       : undefined;
 
+    // Prefer packageType (RevenueCat's explicit enum like "$rc_monthly", "$rc_annual")
+    // since normalPeriodDuration from the web SDK can be missing or incorrect.
+    // Fall back to ISO 8601 duration parsing.
+    const period =
+      packageTypeToPeriod(pkg.packageType) ??
+      parseISO8601Period(product.normalPeriodDuration);
+
     const parsedProduct: SubscriptionProduct = {
       productId: product.identifier,
       name: product.title,
@@ -333,7 +343,7 @@ export class SubscriptionService {
       price: product.price,
       priceString: product.priceString,
       currency: product.currencyCode,
-      period: parseISO8601Period(product.normalPeriodDuration),
+      period,
       periodDuration: product.normalPeriodDuration ?? '',
       trialPeriod: defaultOption?.trial?.periodDuration ?? undefined,
       introPrice: defaultOption?.introPrice?.priceString ?? undefined,
