@@ -35,6 +35,8 @@ export interface UseSubscriptionForPeriodResult {
  * - Free tier first (if configured)
  * - Then paid packages from lowest to highest price
  *
+ * @deprecated Use usePackagesByDuration() to get packages grouped by period across all offerings.
+ *
  * @param offerId Offer identifier
  * @param period Billing period to filter by
  * @param options Optional configuration including userId

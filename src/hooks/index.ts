@@ -2,17 +2,35 @@
  * Hook Exports
  */
 
-export {
-  useSubscriptions,
-  type UseSubscriptionsResult,
-  type UseSubscriptionsOptions,
-} from './useSubscriptions';
+// New multi-offering hooks
+export { useAllOfferings, type UseAllOfferingsResult } from './useAllOfferings';
 
+export {
+  useOfferingPackages,
+  type UseOfferingPackagesResult,
+} from './useOfferingPackages';
+
+export {
+  usePackagesByDuration,
+  type PackageWithOffer,
+  type UsePackagesByDurationResult,
+} from './usePackagesByDuration';
+
+// Active hooks
 export {
   useUserSubscription,
   type UseUserSubscriptionResult,
   type UseUserSubscriptionOptions,
 } from './useUserSubscription';
+
+export { useEntitlements, type UseEntitlementsResult } from './useEntitlements';
+
+// Deprecated hooks (kept for backwards compatibility)
+export {
+  useSubscriptions,
+  type UseSubscriptionsResult,
+  type UseSubscriptionsOptions,
+} from './useSubscriptions';
 
 export {
   useSubscriptionPeriods,
@@ -29,5 +47,3 @@ export {
   type UseSubscribableResult,
   type UseSubscribableOptions,
 } from './useSubscribable';
-
-export { useEntitlements, type UseEntitlementsResult } from './useEntitlements';

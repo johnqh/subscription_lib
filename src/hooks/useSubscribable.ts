@@ -36,6 +36,8 @@ export type UseSubscribableOptions = UseSubscriptionsOptions;
 /**
  * Hook to get packages that the user can subscribe to or upgrade to
  *
+ * @deprecated Use usePackagesByDuration() with useUserSubscription() to determine upgrade eligibility.
+ *
  * Upgrade eligibility rules:
  * - If no current subscription: all packages are subscribable
  * - If on free tier: all paid packages are subscribable

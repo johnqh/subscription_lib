@@ -27,6 +27,8 @@ export interface UseSubscriptionPeriodsResult {
 /**
  * Hook to get available billing periods from an offer
  *
+ * @deprecated Use usePackagesByDuration() to get available periods across all offerings.
+ *
  * @param offerId Offer identifier
  * @param options Optional configuration including userId
  * @returns Available periods, sorted from shortest to longest

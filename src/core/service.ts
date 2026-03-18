@@ -158,6 +158,15 @@ export class SubscriptionService {
   }
 
   /**
+   * Get all cached offers sorted by identifier
+   */
+  getAllOffers(): SubscriptionOffer[] {
+    return Array.from(this.offersCache.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, offer]) => offer);
+  }
+
+  /**
    * Get current subscription info
    */
   getCurrentSubscription(): CurrentSubscription | null {

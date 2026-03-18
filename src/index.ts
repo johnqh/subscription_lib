@@ -22,23 +22,38 @@ export {
   type SubscriptionServiceConfig,
 } from './core';
 
-// Hooks
+// Hooks (new multi-offering hooks)
+export {
+  useAllOfferings,
+  useOfferingPackages,
+  usePackagesByDuration,
+  type UseAllOfferingsResult,
+  type UseOfferingPackagesResult,
+  type UsePackagesByDurationResult,
+  type PackageWithOffer,
+} from './hooks';
+
+// Hooks (active)
+export {
+  useUserSubscription,
+  useEntitlements,
+  type UseUserSubscriptionResult,
+  type UseUserSubscriptionOptions,
+  type UseEntitlementsResult,
+} from './hooks';
+
+// Hooks (deprecated - kept for backwards compatibility)
 export {
   useSubscriptions,
-  useUserSubscription,
   useSubscriptionPeriods,
   useSubscriptionForPeriod,
   useSubscribable,
-  useEntitlements,
   type UseSubscriptionsResult,
   type UseSubscriptionsOptions,
-  type UseUserSubscriptionResult,
-  type UseUserSubscriptionOptions,
   type UseSubscriptionPeriodsResult,
   type UseSubscriptionForPeriodResult,
   type UseSubscribableResult,
   type UseSubscribableOptions,
-  type UseEntitlementsResult,
 } from './hooks';
 
 // Types

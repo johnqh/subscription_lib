@@ -42,6 +42,8 @@ export interface UseSubscriptionsOptions {
  * Hook to get subscription offer data (product catalog).
  * Note: Offerings don't change with user, so this hook doesn't need userId.
  *
+ * @deprecated Use useAllOfferings() to get all offerings, or useOfferingPackages(offerId) for a specific offering's packages.
+ *
  * @param offerId Offer identifier to fetch
  * @param _options Optional configuration (userId accepted but not used - offerings are user-independent)
  * @returns Offer data, loading state, and error
