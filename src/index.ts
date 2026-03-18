@@ -85,6 +85,7 @@ export {
   getPeriodRank,
   comparePeriods,
   isPeriodGreaterOrEqual,
+  periodToMonths,
   calculatePackageLevels,
   addLevelsToPackages,
   getPackageLevel,

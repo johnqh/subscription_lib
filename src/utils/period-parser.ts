@@ -109,6 +109,28 @@ export function comparePeriods(
 }
 
 /**
+ * Get the number of months equivalent for a period.
+ * Used for calculating savings between different durations.
+ *
+ * @param period SubscriptionPeriod
+ * @returns Number of months (e.g., weekly=0.25, monthly=1, quarterly=3, yearly=12)
+ */
+export function periodToMonths(period: SubscriptionPeriod): number {
+  switch (period) {
+    case 'weekly':
+      return 1 / 4;
+    case 'monthly':
+      return 1;
+    case 'quarterly':
+      return 3;
+    case 'yearly':
+      return 12;
+    case 'lifetime':
+      return Infinity;
+  }
+}
+
+/**
  * Check if period A is greater than or equal to period B
  *
  * @param a Period to check

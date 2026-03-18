@@ -158,10 +158,13 @@ export class SubscriptionService {
   }
 
   /**
-   * Get all cached offers sorted by identifier
+   * Get all cached offers sorted by identifier.
+   * Excludes the synthetic "default" offer since it duplicates
+   * whichever real offer RevenueCat marks as current.
    */
   getAllOffers(): SubscriptionOffer[] {
     return Array.from(this.offersCache.entries())
+      .filter(([id]) => id !== 'default')
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([, offer]) => offer);
   }

@@ -7,6 +7,7 @@ export {
   getPeriodRank,
   comparePeriods,
   isPeriodGreaterOrEqual,
+  periodToMonths,
 } from './period-parser';
 
 export {
