@@ -301,6 +301,9 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
 
       const result = await purchases.purchase({
         rcPackage: packageToPurchase,
+        ...(params.customerEmail
+          ? { customerEmail: params.customerEmail }
+          : {}),
       });
 
       // Convert customer info
