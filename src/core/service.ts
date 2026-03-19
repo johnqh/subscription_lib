@@ -42,7 +42,7 @@ export class SubscriptionService {
   private offersCache: Map<string, SubscriptionOffer> = new Map();
   private currentSubscription: CurrentSubscription | null = null;
   private loadOfferingsPromise: Promise<void> | null = null;
-  private isLoadingCustomerInfo = false;
+  private loadCustomerInfoPromise: Promise<void> | null = null;
 
   constructor(config: SubscriptionServiceConfig) {
     this.adapter = config.adapter;
@@ -98,23 +98,31 @@ export class SubscriptionService {
   }
 
   /**
-   * Load customer info from RevenueCat
+   * Load customer info from RevenueCat.
+   * Multiple concurrent calls will share the same promise.
    */
   async loadCustomerInfo(): Promise<void> {
-    if (this.isLoadingCustomerInfo) return;
-
-    this.isLoadingCustomerInfo = true;
-    try {
-      // Ensure offerings are loaded first so we can match packageId
-      if (!this.hasLoadedOfferings()) {
-        await this.loadOfferings();
-      }
-
-      const customerInfo = await this.adapter.getCustomerInfo();
-      this.updateSubscriptionFromCustomerInfo(customerInfo);
-    } finally {
-      this.isLoadingCustomerInfo = false;
+    if (this.loadCustomerInfoPromise) {
+      return this.loadCustomerInfoPromise;
     }
+
+    this.loadCustomerInfoPromise = this.doLoadCustomerInfo();
+
+    try {
+      await this.loadCustomerInfoPromise;
+    } finally {
+      this.loadCustomerInfoPromise = null;
+    }
+  }
+
+  private async doLoadCustomerInfo(): Promise<void> {
+    // Ensure offerings are loaded first so we can match packageId
+    if (!this.hasLoadedOfferings()) {
+      await this.loadOfferings();
+    }
+
+    const customerInfo = await this.adapter.getCustomerInfo();
+    this.updateSubscriptionFromCustomerInfo(customerInfo);
   }
 
   /**

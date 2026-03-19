@@ -4,14 +4,13 @@
  * Fetch and manage current user's subscription status.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CurrentSubscription } from '../types/subscription';
 import {
   getSubscriptionInstance,
   getSubscriptionUserId,
   isSubscriptionInitialized,
   onSubscriptionRefresh,
-  onSubscriptionUserIdChange,
   setSubscriptionUserId,
 } from '../core/singleton';
 
@@ -78,66 +77,57 @@ export function useUserSubscription(
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const loadIdRef = useRef(0);
 
-  // Handle user ID changes
+  // Set user and load data in a single sequential flow to avoid race conditions
   useEffect(() => {
-    const currentLibUserId = getSubscriptionUserId();
-    // Only update if userId is explicitly provided and different
-    if (userId !== undefined && userId !== currentLibUserId) {
-      console.log(
-        '[useUserSubscription] User ID changed, updating subscription user:',
-        {
-          from: currentLibUserId,
-          to: userId,
-        }
-      );
-      setSubscriptionUserId(userId, userEmail);
-    }
-  }, [userId, userEmail]);
+    let cancelled = false;
+    const currentLoadId = ++loadIdRef.current;
 
-  const loadData = useCallback(async () => {
-    if (!isSubscriptionInitialized()) {
-      setError(new Error('Subscription not initialized'));
-      setIsLoading(false);
-      return;
-    }
-
-    const service = getSubscriptionInstance();
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Load customer info if not already loaded
-      if (!service.hasLoadedCustomerInfo()) {
-        await service.loadCustomerInfo();
+    async function initAndLoad() {
+      if (!isSubscriptionInitialized()) {
+        setError(new Error('Subscription not initialized'));
+        setIsLoading(false);
+        return;
       }
 
-      const currentSub = service.getCurrentSubscription();
-      setSubscription(currentSub);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to load subscription')
-      );
-    } finally {
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Set user ID first (await ensures adapter is ready before loading)
+        const currentLibUserId = getSubscriptionUserId();
+        if (userId !== undefined && userId !== currentLibUserId) {
+          await setSubscriptionUserId(userId, userEmail);
+        }
+
+        if (cancelled || currentLoadId !== loadIdRef.current) return;
+
+        const service = getSubscriptionInstance();
+        await service.loadCustomerInfo();
+
+        if (cancelled || currentLoadId !== loadIdRef.current) return;
+
+        setSubscription(service.getCurrentSubscription());
+      } catch (err) {
+        if (!cancelled && currentLoadId === loadIdRef.current) {
+          setError(
+            err instanceof Error
+              ? err
+              : new Error('Failed to load subscription')
+          );
+        }
+      } finally {
+        if (!cancelled && currentLoadId === loadIdRef.current) {
+          setIsLoading(false);
+        }
+      }
     }
-  }, []);
 
-  // Load data on mount and when userId changes
-  useEffect(() => {
-    loadData();
-
-    // Subscribe to user ID changes to reload
-    const unsubscribeUserId = onSubscriptionUserIdChange(() => {
-      console.log('[useUserSubscription] User ID changed, reloading...');
-      loadData();
-    });
+    initAndLoad();
 
     // Subscribe to subscription refresh events (e.g., after purchase)
     const unsubscribeRefresh = onSubscriptionRefresh(() => {
-      console.log('[useUserSubscription] Subscription refreshed, updating...');
-      // Get the updated subscription from the service
       if (isSubscriptionInitialized()) {
         const service = getSubscriptionInstance();
         const currentSub = service.getCurrentSubscription();
@@ -146,10 +136,10 @@ export function useUserSubscription(
     });
 
     return () => {
-      unsubscribeUserId();
+      cancelled = true;
       unsubscribeRefresh();
     };
-  }, [loadData]);
+  }, [userId, userEmail]);
 
   const update = useCallback(async () => {
     if (!isSubscriptionInitialized()) return;
