@@ -92,6 +92,14 @@ export {
   findUpgradeablePackages,
 } from './utils';
 
+// Backend API client
+export {
+  fetchBackendSubscription,
+  useBackendSubscription,
+  type BackendSubscriptionResult,
+  type UseBackendSubscriptionOptions,
+} from './backend';
+
 // Adapters (platform-specific)
 // Web adapter
 export {
