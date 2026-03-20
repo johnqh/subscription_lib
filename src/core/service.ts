@@ -279,14 +279,16 @@ export class SubscriptionService {
 
     // Find the package for this product
     let packageId: string | undefined;
+    let offeringId: string | undefined;
     let period: CurrentSubscription['period'];
 
-    for (const offer of this.offersCache.values()) {
+    for (const [offId, offer] of this.offersCache.entries()) {
       const pkg = offer.packages.find(
         p => p.product?.productId === firstEntitlement.productIdentifier
       );
       if (pkg) {
         packageId = pkg.packageId;
+        offeringId = offId;
         period = pkg.product?.period;
         break;
       }
@@ -296,6 +298,7 @@ export class SubscriptionService {
       isActive: true,
       productId: firstEntitlement.productIdentifier,
       packageId,
+      offeringId,
       entitlements: activeEntitlementIds,
       period,
       expirationDate: firstEntitlement.expirationDate

@@ -72,6 +72,8 @@ export interface CurrentSubscription {
   productId?: string;
   /** Package identifier of the current subscription */
   packageId?: string;
+  /** Offering identifier of the current subscription */
+  offeringId?: string;
   /** Active entitlement identifiers */
   entitlements: string[];
   /** Current subscription period */
