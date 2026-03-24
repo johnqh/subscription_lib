@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import type { NetworkClient } from '@sudobility/types';
-import type { BackendSubscriptionResult } from './types';
+import type {
+  BackendSubscriptionResult,
+  NetworkClient,
+} from '@sudobility/types';
 import { fetchBackendSubscription } from './fetch-backend-subscription';
 
 export interface UseBackendSubscriptionOptions extends Omit<

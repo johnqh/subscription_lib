@@ -1,5 +1,7 @@
-import type { NetworkClient } from '@sudobility/types';
-import type { BackendSubscriptionResult } from './types';
+import type {
+  BackendSubscriptionResult,
+  NetworkClient,
+} from '@sudobility/types';
 
 interface BackendResponse {
   success: boolean;

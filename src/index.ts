@@ -96,7 +96,6 @@ export {
 export {
   fetchBackendSubscription,
   useBackendSubscription,
-  type BackendSubscriptionResult,
   type UseBackendSubscriptionOptions,
 } from './backend';
 
