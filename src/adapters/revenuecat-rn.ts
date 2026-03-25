@@ -225,6 +225,7 @@ function convertEntitlement(
     productIdentifier: entitlement.productIdentifier,
     expirationDate: entitlement.expirationDate || null,
     willRenew: entitlement.willRenew,
+    store: entitlement.store ?? undefined,
   };
 }
 

@@ -17,3 +17,5 @@ export {
   getPackageLevel,
   findUpgradeablePackages,
 } from './level-calculator';
+
+export { mapStoreToPlatform } from './store-platform';

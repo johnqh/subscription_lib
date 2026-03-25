@@ -22,6 +22,7 @@ import {
   packageTypeToPeriod,
   parseISO8601Period,
 } from '../utils/period-parser';
+import { mapStoreToPlatform } from '../utils/store-platform';
 
 /**
  * Configuration for SubscriptionService
@@ -306,6 +307,7 @@ export class SubscriptionService {
         : undefined,
       willRenew: firstEntitlement.willRenew,
       managementUrl: customerInfo.managementUrl,
+      platform: mapStoreToPlatform(firstEntitlement.store),
     };
   }
 

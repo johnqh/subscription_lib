@@ -261,6 +261,7 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
             productIdentifier: entitlement.productIdentifier,
             expirationDate: entitlement.expirationDate?.toISOString() || null,
             willRenew: entitlement.willRenew,
+            store: entitlement.store ?? undefined,
           };
         }
 
@@ -316,6 +317,7 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
           productIdentifier: entitlement.productIdentifier,
           expirationDate: entitlement.expirationDate?.toISOString() || null,
           willRenew: entitlement.willRenew,
+          store: entitlement.store ?? undefined,
         };
       }
 

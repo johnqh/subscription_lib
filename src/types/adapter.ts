@@ -99,6 +99,8 @@ export interface AdapterEntitlementInfo {
   expirationDate: string | null;
   /** Whether subscription will auto-renew */
   willRenew: boolean;
+  /** Store where the entitlement was purchased (e.g., "app_store", "stripe") */
+  store?: string;
 }
 
 /**

@@ -4,7 +4,7 @@
  * Clean abstraction types for subscription data, independent of RevenueCat SDK.
  */
 
-import type { SubscriptionPeriod } from '@sudobility/types';
+import type { SubscriptionPeriod, SubscriptionPlatform } from '@sudobility/types';
 
 /**
  * Product pricing and billing information
@@ -84,6 +84,8 @@ export interface CurrentSubscription {
   willRenew?: boolean;
   /** URL to manage subscription (upgrade/downgrade/cancel) */
   managementUrl?: string;
+  /** Platform where the subscription was purchased */
+  platform?: SubscriptionPlatform;
 }
 
 /**
