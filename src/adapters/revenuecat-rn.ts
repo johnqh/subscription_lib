@@ -105,7 +105,13 @@ export async function setRevenueCatRNUser(
       configured = true;
     } else if (currentUserId !== userId) {
       // Switch user - logout and login
-      await sdk.logOut();
+      // logOut() throws if the current RC user is already anonymous
+      // (e.g. after Firebase sign-out triggers a new anonymous sign-in)
+      try {
+        await sdk.logOut();
+      } catch {
+        // Ignore - already anonymous
+      }
       await sdk.logIn(userId);
     }
 
