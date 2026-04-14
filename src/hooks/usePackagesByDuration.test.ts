@@ -37,7 +37,7 @@ function groupPackagesByDuration(offerings: SubscriptionOffer[]) {
   }
 
   const availableDurations = ALL_PERIODS.filter(
-    (p) => grouped[p] && grouped[p]!.length > 0
+    p => grouped[p] && grouped[p]!.length > 0
   );
 
   return { packagesByDuration: grouped, availableDurations };
