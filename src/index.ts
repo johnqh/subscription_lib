@@ -37,9 +37,12 @@ export {
 export {
   useUserSubscription,
   useEntitlements,
+  useSubscriptionAuth,
   type UseUserSubscriptionResult,
   type UseUserSubscriptionOptions,
   type UseEntitlementsResult,
+  type UseSubscriptionAuthOptions,
+  type UseSubscriptionAuthResult,
 } from './hooks';
 
 // Hooks (deprecated - kept for backwards compatibility)

@@ -25,6 +25,12 @@ export {
 
 export { useEntitlements, type UseEntitlementsResult } from './useEntitlements';
 
+export {
+  useSubscriptionAuth,
+  type UseSubscriptionAuthOptions,
+  type UseSubscriptionAuthResult,
+} from './useSubscriptionAuth';
+
 // Deprecated hooks (kept for backwards compatibility)
 export {
   useSubscriptions,
