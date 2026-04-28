@@ -320,15 +320,26 @@ export function createRevenueCatRNAdapter(): SubscriptionAdapter {
     ): Promise<AdapterPurchaseResult> {
       const sdk = await ensureInitialized();
 
-      // Find the package across all offerings
+      // Find the package - prefer specific offering, fall back to searching all
       const offerings = await sdk.getOfferings();
       let packageToPurchase: RNPackage | undefined;
 
-      for (const offering of Object.values(offerings.all) as RNOffering[]) {
-        packageToPurchase = offering.availablePackages.find(
+      const targetOffering = params.offeringId
+        ? (offerings.all[params.offeringId] as RNOffering | undefined)
+        : undefined;
+      if (targetOffering) {
+        packageToPurchase = targetOffering.availablePackages.find(
           (pkg: RNPackage) => pkg.identifier === params.packageId
         );
-        if (packageToPurchase) break;
+      }
+
+      if (!packageToPurchase) {
+        for (const offering of Object.values(offerings.all) as RNOffering[]) {
+          packageToPurchase = offering.availablePackages.find(
+            (pkg: RNPackage) => pkg.identifier === params.packageId
+          );
+          if (packageToPurchase) break;
+        }
       }
 
       if (!packageToPurchase) {

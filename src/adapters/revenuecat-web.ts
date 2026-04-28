@@ -285,15 +285,26 @@ export function createRevenueCatAdapter(): SubscriptionAdapter {
     ): Promise<AdapterPurchaseResult> {
       const purchases = await ensureInitialized(true);
 
-      // Find the package across all offerings
+      // Find the package - prefer specific offering, fall back to searching all
       const offerings = await purchases.getOfferings();
       let packageToPurchase: Package | undefined;
 
-      for (const offering of Object.values(offerings.all)) {
-        packageToPurchase = offering.availablePackages.find(
+      const targetOffering = params.offeringId
+        ? offerings.all[params.offeringId]
+        : undefined;
+      if (targetOffering) {
+        packageToPurchase = targetOffering.availablePackages.find(
           pkg => pkg.identifier === params.packageId
         );
-        if (packageToPurchase) break;
+      }
+
+      if (!packageToPurchase) {
+        for (const offering of Object.values(offerings.all)) {
+          packageToPurchase = offering.availablePackages.find(
+            pkg => pkg.identifier === params.packageId
+          );
+          if (packageToPurchase) break;
+        }
       }
 
       if (!packageToPurchase) {
