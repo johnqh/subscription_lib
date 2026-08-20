@@ -1,5 +1,10 @@
 # subscription_lib - AI Development Guide
 
+> **Git policy — never auto-commit or auto-push.** Leave your work in the working tree.
+> Run `git commit`, `git push`, `gh pr create`, or `scripts/push_all.sh` **only when the user
+> explicitly asks in that turn**. Approval for an earlier change does not carry forward, and
+> finishing a task is not permission to commit it.
+
 ## Overview
 
 Cross-platform subscription management library that abstracts RevenueCat SDK differences between web (`@revenuecat/purchases-js`) and React Native (`react-native-purchases`) behind a unified adapter interface. Provides React hooks for fetching offerings, tracking user subscription status, filtering by billing period, and determining upgrade eligibility. Consumers supply a platform-specific adapter at initialization time and interact with subscriptions through a clean, SDK-agnostic API.
@@ -270,3 +275,7 @@ shapeshyft_app, mail_box (consume components)
 - **`useUserSubscription` has a deprecated `refetch` alias** -- It returns both `update` and `refetch` (identical); prefer `update`.
 - **`findUpgradeablePackages` has a local `periodRanks` copy** -- It duplicates the period rank mapping rather than importing from `@sudobility/types`. Keep in sync.
 - **ESM-only output** -- No CJS build. The `exports` field only provides `import` and `types` conditions.
+
+## Git Workflow
+
+- Do not use feature branches for code changes. Always stay on the current branch.
